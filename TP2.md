@@ -286,7 +286,7 @@ bind = "0.0.0.0:8000"
 worker_class = "gthread"
 threads = int(os.getenv('GUNICORN_CORES','1')) * 2 + 1
 ```
-Utilisez l'éditeur vim (ou le Web IDE) pour créer un fichier Dockerfile. Dans ce fichier, ajoutez le contenu suivant :
+Utilisez l'éditeur vim pour créer un fichier Dockerfile. Dans ce fichier, ajoutez le contenu suivant :
 
 ```Dockerfile
 # app/Dockerfile
