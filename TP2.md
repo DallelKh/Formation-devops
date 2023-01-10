@@ -1,4 +1,4 @@
-# Docker / Kubernetes - TP2 : Construction d'images et Registres
+# Docker  - TP2 : Construction d'images et Registres
 > **Objectifs du TP** :
 >- Utiliser un registre afin de stocker des images Docker
 >- Comprendre comment est construite une image Docker avec son application
