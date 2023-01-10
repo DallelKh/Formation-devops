@@ -202,7 +202,23 @@ Effectuons maintenant quelques changements dans notre conteneur.
 # apt-get update
 # apt-get -y install vim
 ```
-Nous venons d'installer vim sur notre conteneur Ubuntu. Cependant, nous savons que si nous tuons le conteneur et que nous le supprimons, nous n'aurons aucun moyen de repartir de ce point sans avoir à retaper ces commandes et télécharger de nouveau le paquet Vim. Pour éviter cela, nous allons faire un commit du conteneur et pousser son image dans un dépôt de notre registre privé ! Tapez exit puis ensuite la commande suivante :
+Nous venons d'installer vim sur notre conteneur Ubuntu. Cependant, nous savons que si nous tuons le conteneur et que nous le supprimons, nous n'aurons aucun moyen de repartir de ce point sans avoir à retaper ces commandes et télécharger de nouveau le paquet Vim. Pour éviter cela, nous allons faire un commit du conteneur et pousser son image dans un dépôt du registre public docker hub, veuillez d' abord creer un compte sur docker hub http://hub.docker.com/sso/start
+
+Une fois que vous vous êtes enregistré avec succès avec un nom d'utilisateur, toutes les images Docker que vous uploadez sur ce compte sont accessibles par le nom d'utilisateur avec le nom de l'image.
+
+Disons, par exemple, que le nom d'utilisateur de mon compte est dalel. Si une image Docker nommée erp peut être poussée vers ce compte, alors nous pouvons accéder à l'image comme ci-dessous.
+```
+docker pull dalel/erp
+```
+
+Tout d'abord, connectez-vous au hub docker en utilisant la commande suivante.
+
+```
+docker login
+```
+Veuillez entrer votre nom d'utilisateur et votre mot de passe ici. Si la connexion est réussie, vous obtiendrez un message comme Login Succeeded.
+
+ ! Tapez exit puis ensuite la commande suivante :
 ```sh
 dev $ docker container commit vimubuntu $REGISTRY_URL/$TRG/vimubuntu
 ```
