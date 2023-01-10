@@ -241,11 +241,11 @@ Nous savons que deux méthodes sont possibles pour construire une image. La deux
 
 Nous allons créer notre propre application, et cette fois-ci à l'aide d'un Dockerfile !
 
-Veillez à quitter le conteneur dans lequel vous êtes. Puis préparez à travailler dans le répertoire de travail `~/dalk/kubernetes-app/` (le répertoire est déjà présent). Nous allons être amenés à créer plusieurs fichiers dans ce répertoire :
+Veillez à quitter le conteneur dans lequel vous êtes. Puis préparez à travailler dans le répertoire de travail `~/VotreNom/app/` Nous allons être amenés à créer plusieurs fichiers dans ce répertoire :
 
 Dans le fichier `app.py`, copiez le code suivant (attention à l’indentation) :
 ```py
-# kubernetes-app/app.py
+# app/app.py
 from flask import Flask
 from http import HTTPStatus
 from werkzeug.exceptions import HTTPException
@@ -254,7 +254,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello Kubernetes!\n"
+    return "Hello Docker!\n"
 
 @app.errorhandler(HTTPException)
 def handle_http_exception(exception: HTTPException):
@@ -267,11 +267,11 @@ def handle_exception(exception: Exception):
 
 Ce code représente une application que l’on fera évoluer pour montrer toutes les capacités de Kubernetes. Il utilise un framework Python qui s’appelle `Flask`. Il nous permettra d'ajouter des fonctionnalités de façon assez simple, sans avoir besoin de rajouter beaucoup de code.
 
-Pour l’instant l’application est très basique : elle répond sur la route racine `/` par `Hello Kubernetes` et un code `HTTP 200`.
+Pour l’instant l’application est très basique : elle répond sur la route racine `/` par `Hello Docker` et un code `HTTP 200`.
 
 Pour s'exécuter, l'application nécessite des modules comme `Flask`. On utilisera aussi `gunicorn`, un serveur Python WSGI HTTP. Nous allons mettre toutes ces dépendances dans un fichier de prérequis standard en Python : `requirements.txt`. Dans ce fichier, mettez le contenu suivant :
 ```sh
-# kubernetes-app/requirements.txt
+# app/requirements.txt
 Flask==2.0.3
 gunicorn==19.9.0
 Jinja2==3.1.1
@@ -279,7 +279,7 @@ Jinja2==3.1.1
 
 Éditez également le fichier `config.py` avec le contenu suivant :
 ```py
-# kubernetes-app/config.py
+# app/config.py
 import os
 
 bind = "0.0.0.0:8000"
@@ -289,7 +289,7 @@ threads = int(os.getenv('GUNICORN_CORES','1')) * 2 + 1
 Utilisez l'éditeur vim (ou le Web IDE) pour créer un fichier Dockerfile. Dans ce fichier, ajoutez le contenu suivant :
 
 ```Dockerfile
-# kubernetes-app/Dockerfile
+# app/Dockerfile
 FROM python:3.7-alpine
 LABEL maintainer="<Nom> <Prénom>"
 
@@ -331,9 +331,9 @@ Prenons le temps d'étudier ces commandes :
 
 `ENTRYPOINT` et `CMD` permettent de définir la commande qui est lancée au démarrage de notre conteneur. On parlera des différences entre ces deux directives plus tard dans la formation.
 
-Maintenant que nous avons créé notre fichier Dockerfile, il est temps de créer notre fichier docker-compose qui va nous simplifier la construction et le lancement de notre application. Nous allons créer un fichier `docker-compose.yml` (toujours dans  `~/dalk/kubernetes-app/`) avec le contenu suivant :
+Maintenant que nous avons créé notre fichier Dockerfile, il est temps de créer notre fichier docker-compose qui va nous simplifier la construction et le lancement de notre application. Nous allons créer un fichier `docker-compose.yml` (toujours dans  `~/VotreNom/app/`) avec le contenu suivant :
 ```yaml
-# kubernetes-app/docker-compose.yml
+# app/docker-compose.yml
 ---
 version: '3'
 services:
@@ -463,9 +463,9 @@ Notez bien que toutes les commandes sont enchaînées dans une seule instruction
 Il est à présent temps de démarrez l’application. Pour ce faire, exécutez la commande suivante :
 ```sh
 dev $ docker compose up
-Creating network "kubernetes-app_default" with the default driver
-Creating kubernetes-app_app_1 ... done
-Attaching to kubernetes-app_app_1
+Creating network "app_default" with the default driver
+Creating app_app_1 ... done
+Attaching to app_app_1
 app_1 | [2019-01-08 15:53:33] [1] [INFO] Starting gunicorn 19.9.0
 app_1 | [2019-01-08 15:53:33] [1] [INFO] Listening at: http://0.0.0.0:8000 (1)
 app_1 | [2019-01-08 15:53:33] [1] [INFO] Using worker: gthread
@@ -485,9 +485,9 @@ dev $ curl localhost:8000 -v
 < Content-Length: 12
 <
 * Closing connection 0
-Hello Kubernetes!
+Hello Docker!
 ```
-On voit que l’application répond avec un status code HTTP 200 et le message “Hello Kubernetes!”.
+On voit que l’application répond avec un status code HTTP 200 et le message “Hello Docker!”.
 ## 9- Transférer notre image sur le registre
 
 Maintenant que nous avons notre image locale, le but est de la transférer sur le **registre central** afin que tout le monde puisse en profiter en appelant la commande `docker image pull`. Transférons notre image **app** sur le **registre** que nous avons utilisé plus tôt lors de ce TP. Pour effectuer cette action, nous devons utiliser la commande `docker compose push`.
