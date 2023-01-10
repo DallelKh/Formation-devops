@@ -5,7 +5,7 @@
 - Creation d'une VM linux ubuntu (preferablement sans interface graphique).
 
 vous pouvez suivre ce tutoriel https://www.numetopia.fr/comment-installer-ubuntu-dans-virtualbox/#creer_une_machine_virtuelle_ubuntu_avec_virtualbox_70.
-et telechrger l'image ubuntu iso sur le site officiel https://ubuntu.com/download/desktop
+et telecharger l'image ubuntu iso sur le site officiel https://ubuntu.com/download/desktop
 
 
 - installer docker et le plugin docker-compose sous linux .
