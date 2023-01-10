@@ -222,7 +222,7 @@ Veuillez entrer votre nom d'utilisateur et votre mot de passe ici. Si la connexi
 ```sh
 dev $ docker container commit vimubuntu <VotreNomDeCompte>/vimubuntu
 ```
-Vos chers formateurs ont déjà fait le travail de vous connecter à une registry distante. Les variables <VotreNomDeCompte> correspond au nom de votre compte sur Docker Hub.
+ Les variables <VotreNomDeCompte> correspond au nom de votre compte sur Docker Hub.
 
 En retour de la commande, Docker nous donne un identifiant :
 ```sh
@@ -355,7 +355,7 @@ version: '3'
 services:
   app:
     build: .
-    image: "$REGISTRY_URL/$TRG/app:v0.1"
+    image: "VotreNom/app:v0.1"
     ports:
     - "8000:8000"
 ```
@@ -509,8 +509,8 @@ On voit que l’application répond avec un status code HTTP 200 et le message �
 Maintenant que nous avons notre image locale, le but est de la transférer sur le **registre central** afin que tout le monde puisse en profiter en appelant la commande `docker image pull`. Transférons notre image **app** sur le **registre** que nous avons utilisé plus tôt lors de ce TP. Pour effectuer cette action, nous devons utiliser la commande `docker compose push`.
 ```
 dev $ docker compose push
-Pushing app ($REGISTRY_URL/$TRG/app:v0.1)...
-The push refers to a repository [$REGISTRY_URL/$TRG/app]
+Pushing app (<VotreNomDeCompte>/app:v0.1)...
+The push refers to a repository [<VotreNomDeCompte>/app]
 fe248af17b1b: Pushed
 5a54a6dcff20: Pushed
 50f589ab1c5f: Pushed
@@ -523,9 +523,9 @@ v0.1: digest: sha256:683e3fa0b802b4216c80434ae688124b48cec58bfba628bd56944c9e5a6
 ```
 Cette commande utilise `docker compose`, mais en réalité, elle ne fait qu’encapsulser pour vous un appel à la commande `docker image push` :
 ```sh
-dev $ docker image push $REGISTRY_URL/$TRG/app:v0.1
+dev $ docker image push <VotreNomDeCompte>/app:v0.1
 ```
-En analysant la trace, on remarque que Docker détecte que nous voulons pousser notre image dans le dépôt **app** situé dans le registre accessible à l'adresse `$REGISTRY_URL/$TRG`.
+En analysant la trace, on remarque que Docker détecte que nous voulons pousser notre image dans le dépôt **app** situé dans le registre accessible à l'adresse `<VotreNomDeCompte>`.
 Ensuite, Docker transfère une à une les couches qui forment notre image sur notre registre. Notre registre contient ainsi notre image, et s'il était public et accessible, n'importe qui pourrait appeler la commande `docker image pull` afin de télécharger l'image et ensuite appeler `docker container run` pour construire un conteneur à partir de cette image.
 ## 10- Nettoyage des conteneurs
 
