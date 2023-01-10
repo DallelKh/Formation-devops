@@ -1,4 +1,4 @@
-# Docker / Kubernetes - TP1 : Images, conteneurs et volumes
+# Docker  - TP1 : Images, conteneurs et volumes
 
 > **Objectifs du TP** :
 > - Se familiariser avec les concepts d’images et de conteneurs
