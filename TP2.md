@@ -204,11 +204,11 @@ Effectuons maintenant quelques changements dans notre conteneur.
 ```
 Nous venons d'installer vim sur notre conteneur Ubuntu. Cependant, nous savons que si nous tuons le conteneur et que nous le supprimons, nous n'aurons aucun moyen de repartir de ce point sans avoir à retaper ces commandes et télécharger de nouveau le paquet Vim. Pour éviter cela, nous allons faire un commit du conteneur et pousser son image dans un dépôt du registre public docker hub, veuillez d' abord creer un compte sur docker hub http://hub.docker.com/sso/start
 
-Une fois que vous vous êtes enregistré avec succès avec un nom d'utilisateur, toutes les images Docker que vous uploadez sur ce compte sont accessibles par le nom d'utilisateur avec le nom de l'image.
+Une fois que vous vous êtes enregistré avec succès avec un nom d'utilisateur, toutes les images Docker que vous uploadez sur ce compte sont accessibles par le nom d'utilisateur <VotreNomDeCompte> avec le nom de l'image.
 
-Disons, par exemple, que le nom d'utilisateur de mon compte est dalel. Si une image Docker nommée erp peut être poussée vers ce compte, alors nous pouvons accéder à l'image comme ci-dessous.
+Disons, par exemple, que le nom d'utilisateur de mon compte est dalel. Si une image Docker nommée vimubuntu peut être poussée vers ce compte, alors nous pouvons accéder à l'image comme ci-dessous.
 ```
-docker pull dalel/erp
+docker pull dalel/vimubuntu
 ```
 
 Tout d'abord, connectez-vous au hub docker en utilisant la commande suivante.
@@ -220,9 +220,9 @@ Veuillez entrer votre nom d'utilisateur et votre mot de passe ici. Si la connexi
 
  ! Tapez exit puis ensuite la commande suivante :
 ```sh
-dev $ docker container commit vimubuntu $REGISTRY_URL/$TRG/vimubuntu
+dev $ docker container commit vimubuntu <VotreNomDeCompte>/vimubuntu
 ```
-Vos chers formateurs ont déjà fait le travail de vous connecter à une registry distante. Les variables d’environnement $REGISTRY_URL et $TRG correspondent respectivement à l’adresse de votre registry et à votre trigramme.
+Vos chers formateurs ont déjà fait le travail de vous connecter à une registry distante. Les variables <VotreNomDeCompte> correspond au nom de votre compte sur Docker Hub.
 
 En retour de la commande, Docker nous donne un identifiant :
 ```sh
@@ -238,15 +238,15 @@ Listons les images pour essayer de retrouver la nôtre:
 ```sh
 $ docker image ls
 REPOSITORY                     TAG       IMAGE ID            CREATED             SIZE
-$REGISTRY_URL/$TRG/vimubuntu   latest    fe12ceb6e74c        8 minutes ago       186 MB
+<VotreNomDeCompte>/vimubuntu   latest    fe12ceb6e74c        8 minutes ago       186 MB
 ```
-Notre image est bien listée comme $REGISTRY_URL/$TRG/vimubuntu (où les variables sont remplacées par les valeurs correspondantes à votre environnement). Nous pouvons maintenant l’envoyer au registre avec la commande suivante :
+Notre image est bien listée comme <VotreNomDeCompte>/vimubuntu (où les variables sont remplacées par les valeurs correspondantes à votre environnement). Nous pouvons maintenant l’envoyer au registre avec la commande suivante :
 ```sh
-dev $ docker image push $REGISTRY_URL/$TRG/vimubuntu
+dev $ docker image push <VotreNomDeCompte>/vimubuntu
 ```
  Relançons un autre conteneur grâce à cette image :
 ```sh
-dev $ docker container run -i -t $REGISTRY_URL/$TRG/vimubuntu /bin/bash
+dev $ docker container run -i -t <VotreNomDeCompte>/vimubuntu /bin/bash
 ```
 Tapez la commande vim dans le shell. On remarque que vim est déjà installé sur le conteneur. Nous avons sauvegardé nos changements avec succès!
 
@@ -408,7 +408,7 @@ Successfully tagged 261407191094.dkr.ecr.eu-west-3.amazonaws.com/dalk/app:v0.1
 ```
 Cette commande utilise `docker compose`, mais en réalité, elle ne fait qu’encapsulser pour vous un appel à la commande `docker image build` :
 ```sh
-dev $ docker image build -t=$REGISTRY_URL/$TRG/app:v0.1 .
+dev $ docker image build -t=<VotreNomDeCompte>/app:v0.1 .
 ```
 Cette commande ordonne à Docker de créer une nouvelle image en respectant les instructions contenues dans le Dockerfile que nous venons de créer. Nous affectons également un nom à notre nouvelle image afin de pouvoir l'identifier avec le flag -t. Nous pouvons optionnellement affecter un **tag** de version différent de `latest` en ajoutant “:” puis le nom de la version à la suite du nom de l’image (`v0.1` dans notre cas).
 
