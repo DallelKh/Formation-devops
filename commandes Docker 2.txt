@@ -1,0 +1,350 @@
+Commandes Imporatntes Docker :
+
+#docker version   ==> affiche la version de client et de serveur docker 
+
+
+#docker run hello-world ==> permet de creer un container de test qui permet de vérifier que docker tourn correctement 
+
+#docker image ls ==> pour afficher les images docker utiliser 
+
+
+===> l'objectif est de personaliser notre image qu'on va mettre dans le docker hub
+
+configure portainer : 
+
+https://journaldunadminlinux.fr/tutoriel-gerez-vos-container-docker-avec-portainer/
+
+
+l'interface docker0 est un switch virtuel (pont) qui fait le lien entre le hote et les conatiners 
+
+CODE FORMATION KUBERNETES : XW335
+
+#docker run -d nginx ===> -d pour détacher et cette option permet de créer un nouveau container nginx car on a déja un container nginx et on ne peut pas modifier quelques caractéristique de mon container 
+
+
+#iptables -nvL -t nat | grep -w 80 ===> permet d'afficher les régles nat les régles iptables de la table NAT
+
+==> docker permet de connaitre les détails et les informations contenu dans une image comme le port utiliser pour le service 
+exemple : 
+
+#docker image inspect nginx:latest    ==> si latest n'est pas ajouter alors docker le fait 
+
+l'arrét  ou la supression du service docker permet de supprimer l'interface docker0 et les régles iptables qui ont été ajouter 
+
+#########################
+
+#docker exec nginx cat /etc/os-release ===> permet d'exécuter la commande /etc/os-release dans le container nginx 
+
+#docker exec -t -i nginx bash ===> -t pour titiway et -i pour interractive 
+
+===> le vhost par defaut dans nginx est dans /etc/nginx/conf.d
+
+===> le index.html par defaut est dans /usr/share/nginx/html 
+
+#docker run -d -p 192.168.147.144:80:80 nginx ; docker run -d -p 10.0.3.15:80:80 nginx ===> permet de ceer deux containers nginx qui écoutes chacun sur son interface réseau puis pour 
+dériger les requétes vers le serveur web adéquat on utilise du revers proxy 
+
+192.168.147.144 correspond a une interface réseau physique sur le serveur et 10.0.3.15 correspond aussi a une a une interface réseau physique sachant qu'une interface réseau peut avoir plusieurs cartes réseaux
+
+#docker ps -aq ==> permet de lister les id de l'ensemble des containers 
+
+#docker rm -f $(docker ps -aq) ==> permet de faire passer la commande docker ps -aq a la commande  docker rm -f comme argument et ca permet de supprimer l'ensemble des containers 
+
+===> creation d'un alias 
+# alias supprimer_les_container='docker rm -f $(docker ps -aq)' ==> cette ligne sera ajouter au fichier .bashrc et supprimer_les_container sera une commande qui permet de supprimer l'ensemble de nos conatiners 
+
+#docker cp index.html nginx:/usr/share/nginx/html/index.html ==> permet de copier le fichier index.html du hote dans le dossier spécifier du container
+
+###########################configuration volumes sous docker#############################################
+
+#mkdir -p -m 7000 /var/docker/web  ==> le -p permet de creer le dossier parent s'il n'existe pas et dans notre cas il va créer le dossier docker qui n'existe pas encore avant de créer le dossier web souhaiter
+
+#docker run -d -v /var/docker/web:/usr/share/nginx/html nginx ==> permet de creer un container nginx et de le rattacher a un volume grace a l'option -v en grop tout ce qu'on va mettre dans /var/docker/web sera copier dans /usr/share/nginx/html
+==> cette technique s'appelle du volume binding
+
+#Couche de sécuriter par defaut sur Debian s'appelle AppArmor 
+
+#nginx fonctionne en mode fork c'est a dire qu'on a un processus pére qui écoute les requetes sur le port 80 et 443 et il les destribues aux processus fils qui ont des identités déffirentes du root 
+et dans le cas oû on a un dossier sous 700 on aura un 403 forbiden et pour corriger cette erreur il faut passer les droits sur le dossier en 755 pour permettre au process exécuter par d'autres utilisateurs que le root 
+
+
+#docker run -d -p 8080:8080 -v volume_docker:/usr/share/nginx/html nginx ==> permet de creer un container nginx avec un volume appeler volume_docker qui sera créer dans /var/lib/docker/volumes/ et cette action est faite automatiquement avec docker
+
+#docker inspect volume_docker ==> permet d'afficher les particularités du volme créer precédament
+==> cette technique s'appelle du volume mount 
+
+#ls -i index.html ==> permet d'affiche le inode du fichier et l'inode est l'adresse du fichier sur  le disque dure et gedit et nano change le inode du fichier lorsqu'il est modifier et cela pause probléme sous docker 
+mais nano ne le change pas ==> lorsqu'on fait du binding de fichier comme dans ce cas il faut tjr modifier le fichier avec nano pour  que les modifs soient vu par le container docker 
+
+#curl -I 142.44.129.140 ===> permet d'afficher la version du serveur nginx heberger ===> c'est trés dangereux pour nous ==> il faut empécher l'affichage de cette valeur 
+
+pour cela il faut aller la modifier dans le fichier nginx.conf ==> on va modifier ce fichier avec sed 
+
+#sed '/^http/a\'   ===> chercher la ligne http puis aec la directive 'a' on ajoute server_tokens off 
+>server_tokens off:
+' nginx.conf
+
+ou on utilise la commande sed avec la directive -i  qui permet de modifier la ligne 'server_tokens' si elle existe 
+
+#sed -i '/^http/a\'    
+>server_tokens off:
+' nginx.conf
+
+#grep -5 ^http nginx.conf 
+
+
+#####forcer un service linux a se synchroniser sans le redémarrer et cela en utisant un sugnal avec la commande kill 
+#kill -l ==> permet d'afficher les signaux disponible 
+le signal SIGHUP permet de demander a un service de relire ses fichiers de configurations 
+on utilise la commande ps pour afficher l'id du process mais cette commande n'existe pas du coup on peut utiliser le sysctl nginx reload 
+ou bien docker donne toujour le pid numéro 1 au process principal du container du coup on peut faire #kill -HUP 1
+
+
+##########################Deuxiéme partie#######################################################
+
+#docker commit -m "suppression de la version nginx dans ses entetes" mon_nginx nginxdiscret  ===> mon_nginx est mon container et nginxdiscret est le nom de mon image 
+
+===> cette commande permet de créer l'image d'un container avec un commit ==> on a fait des manipulation sur l'image initiale nginx (ajout de fichier etc ...) puis avec un commit on a créer une nouvelle image personaliser qu'on a appeler 
+nginxdiscret ===> on fait toujours un commit sur un conatiners et on personalise le nom de notre nouvelle image 
+
+#docker images ===> pour lister les images docker qu'on manipule 
+
+sous docker les images sont coupé en couches appeller layer et losqu'on fait un docker run on voient plusieurs pull et cela correspond aux couches de l'image qu'est rapatrier 
+
+#docker inspect nginxdiscret:latest | tail -15 ===> permet d'afficher les 15 derniéres lignes de l'image nginxdiscret
+
+les layesrs de l'image original de nginx sont en mode lecture seule alors que les layers de mon conatiner basé sur cette image sont en mode lecture ecriture 
+
+===> un fichier linux est composé de ses données et de ses metadonnées (euro datage, acces time ..etc )
+
+
+La distribution alpine est un système d'exploitation de choix pour la génération des images docker car elle est super légére et elle contient tout les outils standard (nano, ifconfig, ps ..etc) qui sont pas présent sur les
+images Debian et ubuntu par exemple
+
+CREATION D'UNE IMAGE DOCKER AVEC DOCKERFILE 
+
+
+FROM alpine:3.9 #il faut ajouter a chaque fois la version de notre image sinon il va mettre la latest et la latest change
+
+RUN apk update   #apk remplace apt dans un dockerfile
+RUN apk upgrade
+RUN apk add nginx nginx-mod-http-headers-more
+
+
+RUN mkdir -p /run/nginx
+RUN echo "Notre serveur nginx sur alpine" > /var/www/localhost/htdocs/index.html
+RUN sed -i 's=return 404=root /var/www/localhost/htdocs/=' /etc/nginx/conf.d/default.conf # le = est un délimiteur  
+CMD  ["nginx", "-g", "daemon off;"] #permet de lancer une commade lors du lancement du processus principal de creation de l'image, "nginx "-g" "daemon off;" sont des paramétres pour notre commande
+
+#docker build -t nginxfurtif:1 . ==> permet de creer une image docker nomé dockerfurtif avec la version 1 en se basabt sur le DOCKERFILE DU REPERTOIRE COURANT "."
+
+===> pour enchainer l'exécution de plusieurs commandes sur la méme ligne on utilise CMD1 && CMD2 && CMD3 si la commade1 ne passe pas alors la commande 2 ne sera pas exécuter
+l'utilisation des && est trés imporatnt car la multiplication des RUN dans mon dockerfile ajoute a chaque RUN un layer et de ce fait alordie mon image et devient :
+
+FROM alpine:3.9
+
+RUN apk update && \
+    apk upgrade && \
+    apk add nginx nginx-mod-http-headers-more && \
+    apk rm -r /var/cache/apk/*  # permet de vider le cache de la commande apk qu'est équivalente a apt car le update rapatrie les données des packages et ca allordie notre image
+
+WORKDIR /etc/nginx/conf.d  # permet de spécifier le dossier de travail avant chaque bloque de RUN et permet d'éviter de repeter l'écriture du chemin du dossier a chaque fois
+
+RUN mkdir -p /run/nginx && \
+    echo 'more_set_headers "Server: zetes trop curieux";' > aquiestleserveur.conf && \
+    echo "Notre serveur nginx sur alpine" > /var/www/localhost/htdocs/index.html && \
+    sed -i 's=return 404=root /var/www/localhost/htdocs/=' default.conf
+    ln -sf /dev/stdout /var/log/nginx/acces.log && ln -sf /dev/stderr /var/log/nginx/error.log  # permet de lier les sorties standard /dev/stdout et /dev/stderr aux fichier de log nginx
+
+COPY page_acceuil /var/www/localhost/htdocs/index.html # permet de copier le fichier page_acceuil du repertoire local vers /var/www/localhost/htdocs/index.html et il va remplacer le index.html du echo plus en haut
+EXPOSE 80
+#EXPOSE 443
+CMD  ["nginx", "-g", "daemon off;"]
+
+
+
+
+
+#docker logs $(docker ps -ql) ==> permet d'afficher les log du dernier container lancer
+
+IMPORTANT : Docker ne gére pas automatiquement les logs des conatiners qu'on a créer a partir d'images personaliser 
+
+dans le cas oû docker n'affiche pas les logs de mon serveur web il faudra le connecter manuellement aux fichier de logs du nginx 
+
+
+ajouter un document dans mon image se fait avec ADD ou COPY  
+
+#docker history nom_moncontailer ==> permet d'afficher la liste des commandes qui ont été exécuter dans mon container 
+
+#docker diff mon_container ==> permet d'afficher les manipulations apporter aux fichier de mon_container 
+
+#docker exec mon_container rm /etc/release == permet de supprimer le fichier /etc/os-release de mon_container
+
+#docker run -d --restart always nginx 
+
+#for CID in $(docker ps -q)
+>do
+>echo pour le conteneur d id $ID
+>docker update --restart always $ID    
+
+===> ce bloque permet de démarer l'ensemble des conatiners automatiquement au démarrage du service docker
+
+#docker stats ==> affiche les ressources consommer par un container
+
+#docker update -m 200m --memory-swap 300m mon_container ===> permet den limuter la RAM et la SWAP pour mon_container
+
+
+
+######CONNEXION DE DEUX CONTAINERS#######
+
+
+#docker run -it alpine:3.9 ash ===> permet de creer un contenair alpine et de se connecter dessus ash pour alpine sh car bash n'est pas inclus dans cette version d os 
+
+la commande nc (netcat) permet de remplacer telnet. 
+
+#nc -l -p 100 ==> permet de lancer nc en mode serveur qui ecoute sur le port 100 
+
+==> on lance cette commande sur un container et de l'autre coter on lance #nc 172.17.0.3 100 pour pouvoir envoyer des caratérer du client vers le serveur
+
+#docker run -d --name toto alpine:3.9 
+
+#docker run - --name toto2 --link toto alpine:3.8 ==> permet de lier le container toto2 au container toto ==> cette technique pose un souci car le container toto peut changer d'adresse ip 
+
+SOLUTION : lier mon container a un réseau 
+
+#docker network create mon_reseau
+
+#docker run -it --name toto --network mon_reseau alpine:3.9 ash
+
+#docker run -it --name toto2 --network mon_reseau alpine:3.9 ash 
+
+===> la mise en place des deux containers sur le méme réseau permet de les lié automatiquement les container entre eux ==> pour vérifier tout cela on peut
+vérifier le /etc/resolv.conf de chaque container
+
+===< pour lister les réseau présent sous docker on fait 
+#docker network ls  ==> il ya 3 réseaux par defaut sur docker 
+
+le none ==> il permet de creer un réseau sans lui associer une interface eth0 ==> il aura juste la lo du coup le container est complaitement isoler
+
+le host ===> il permet de récupérer l'ensemble de la configuration du hote (serveur physique) et de la pusher sur le container 
+
+le bridge ==> il permet de connecter le container au réseau creer par defaut par le service docker 
+
+changer le reseau d'un container 
+#docker network connect mon_reseau mon_container ==> permet de changer le réseau de mon container
+#docker network disconnect moon_ancien_reseau mon container ==> détache mon_container de l'ancien réseau 
+
+#docker inspect mon_reseau ===> tres tres important 
+
+#docker conatiner prune ==> permet de supprimer tout les container stoper
+#docker network prune ===>supprime tout les réseau non utiliser par au moin un container
+#docker volume prune 
+
+#docker system prune ==> permet de supprimer toutes les ressources non utiliser  
+
+ 
+###############docker compose############################
+
+===> installation de docker compose ==> https://docs.docker.com/compose/install/
+
+
+#hash -r ===> permet de reload la lecture des directory de la variable PATH (oû on place les programme sous debian) ==> on reset la table de ces hash 
+
+
+create du docker-compose.yaml ==> voici son contenu 
+
+version: '3.3'
+
+services:                        #bloque dans lequel on déclare nos containers 
+    db:
+      image: mysql:5.7
+      volumes:
+      - db_data:/var/lib/mysql
+      environment:
+        MYSQL_ROOT_PASSWORD: SOMEPASSWORD
+        MYSQL_DATABASE: wordpress
+        MYSQL_PASSWORD: wordpress
+    wordpress:
+      image: wordpress
+      depends_on:                    #tres tres important 
+      - db
+      ports:
+      - "80:80"
+      environment:
+       WORDPRESS_DB_HOST: db
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+
+volumes:
+   db_data:                            #declaration du volume précedament utiliser
+
+
+
+
+#docker-compose up -d  ===> on la lance dans le meme repertoire que le docker-compose.yaml
+
+===> docker-compose cree son propore reseau lors du lancement de la commande
+
+ 
+#docker save -o imagedockernginfurtif.tar nginxfurtif:mon_image  #permet d'exporter mon image en format tar dans le repertoire courant 
+
+#docker save -o nginxfurtif:mon_image | xz -9 -c > nginxfurtif.txz # permet de creer un compresser plus interressant en txz ==> txz est le meilleur moyen de compression actuellement
+
+
+#docker export -o conteneur_nginx.tar mon_conteneur_nginx  ==> permet d'exporter mon container sous format tar ==> lors de l'exportation les metadata (port, volume etc ...) ne sont pas garder ce qui n'est pas trop bon 
+
+#docker import conteneur_nginx.tar nginx_new ==> pour recuperer les metadata il faut ajouter l'option -c afin de specifier le Dockerfile qui a permet de generer l'image
+
+PUSHER MON IMAGE SUR LE DOCKER HUB
+
+#Timm@dmin%
+
+
+ORCHESTRATEUR : kubernetes  abreger en K8S 
+
+permet de faire communiquer plusieurs containers présent sur reseaux déffirents
+
+permet la scalabilité
+
+permet le HA (high availibility) 
+
+le volume claims se monte automatiquement sur le premier volume simple ou standard qui correspond aux carasteristiques qu'il demande et nous on met nos fichiers dans le volume simple et ils seront copier automatiquement dans mes containers
+
+
+il faut creer tout d'abord son volume simple puis on ajoute les volumes claims 
+
+
+
+
+#docker swarm init ===> permet d'initier la creation de mon cluster ==> faire attention au numero de port pour ajouter un noeud a notre cluster  192.168.147.106:2377
+
+#docker service create --name service_web --replicas 5 --image nginx
+
+
+il faut oublier de faire du replica de serveur Mysql car il y'aura corruption de données ==> il faut ajouter un outil de gestion de verouis
+
+kubernetes cree son propre reseau qui permet de regrouper plusieurs noeuds sur deffirents serveurs physique 
+
+un service contients des deployement et les deployement contient des pods 
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+ 
+
+
+
+
+
+
+
