@@ -32,7 +32,7 @@ Les images sont stockées dans des dépôts (à la manière d'un repository SVN 
 
 Les images listées par la commande `docker images` ne font pas état d'une image alpine sur notre système. Tentons donc de la télécharger à partir du Docker Hub. Pour ça, on utilise la commande `docker image pull`. Vous devriez observer la sortie suivante :
 ```sh
-dev $ docker image pull --all-tags alpine
+dev $ docker image pull alpine
 2.6: Pulling from library/alpine
 2a3ebcb7fbcc: Pull complete
 Digest: sha256:e9cec9aec697d8b9d450edd32860ecd363f2f3174c8338beb5f809422d182c63
