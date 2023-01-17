@@ -127,4 +127,4 @@ us.nodeInfo.kernelVersion
 > k8s-training-dkusr-n2   amd64     4.4.0-1061-aws
 > k8s-training-dkusr-n3   amd64     4.4.0-1061-aws
 > k8s-training-dkusr-n4   amd64     4.4.0-1061-aws
-> ```
+> ``
