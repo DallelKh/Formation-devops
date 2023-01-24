@@ -335,7 +335,7 @@ pod "kubernetes-app-578bb7d97b-x899f" deleted
 >- Que s’est-il passé ?
 >- Quel est la ressource logique de Kubernetes qui est à l’œuvre ?
   
-  ## 2- Configuration du pod grâce à une ConfigMap
+  ## 7- Configuration du pod grâce à une ConfigMap
 
 Les ***configmaps*** permettent de grouper les configurations consommables par les ***pods***.
 Notre objectif va être de faire en sorte que notre application liste le contenu du fichier `/etc/config/message` et l’affiche quand elle est interrogée sur l’URL `/config`.
@@ -437,7 +437,7 @@ dev $ docker image build -t=<VotreNomDeCompte>/app:v0.2 .
 dev $ docker image push <VotreNomDeCompte>/app:v0.2
 ```
 
-Testons maintenant une requête vers notre nouvelle route  (indice: comande curl <IP_UN_DES_NOEUDS>:<NODEPORT>/config...)
+> Testons maintenant une requête vers notre nouvelle route  (indice: comande curl <IP_UN_DES_NOEUDS>:<NODEPORT>/config...)
 
 Pour l’instant, pas de résultat probant, mais c’est normal. Il est nécessaire de faire plusieurs opérations :
 - Préciser qu’à présent nous allons utiliser la version **v0.2** de l’image
@@ -449,7 +449,7 @@ Notons de l’exposition de la ***configmap*** implique 2 nouveaux blocs de conf
 - Un nouveau Volume qui se base sur la ***configmap*** créée précédemment
 - Un point de montage au niveau de notre conteneur qui réutilise le volume initialisé et qui le monte sur le _mountPath_
 
->Appliquons notre modification (indice: la commande Apply de k8s)
+> Appliquons notre modification (indice: la commande Apply de k8s)
 
 La nouvelle configuration va automatiquement déployer un nouveau ***pod*** prenant en compte la nouvelle configuration.
 
