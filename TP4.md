@@ -225,7 +225,7 @@ Investiguons un instant. Les commandes `kubectl get events` et `kubectl describe
 >
 > Essayez de comprendre la raison pour laquelle notre application ne peut pas être déployée.
 
-Vous l’aurez compris, nous avons un problème d’authentification lors de la récupération de notre image dans la registry privée. Nous allons devoir donner les credentials à notre ***deployment***. Pour cela, nous allons passer par une ressource de type ***secret***. il faut créér ce secret. Il porte le nom de **`regsec`** : (chercher comment creer le secret), une fois créé, s'assurer qu'il existe
+Vous l’aurez compris, nous avons un problème d’authentification lors de la récupération de notre image dans la registry Docker Hub (où on avait mis notre image lors du tp2). Nous allons devoir donner les credentials à notre ***deployment***. Pour cela, nous allons passer par une ressource de type ***secret***. il faut créér ce secret. Il porte le nom de **`regsec`** : (chercher comment creer le secret), une fois créé, s'assurer qu'il existe
 
 ```sh
 dev $ kubectl get secret regsec
@@ -304,7 +304,7 @@ Hello Kubernetes!
 
 Vous pouvez vérifier que la commande `cURL` renvoie bien le résultat attendu, quelque soit le nœud du cluster que l’on interroge en remplaçant par une de vos **`INTERNAL-IP`** et votre **`PORT`** associé.
 
-Bravo ! Votre application est désormais disponible dans une **registry privée**, **déployée** dans votre cluster Kubernetes et accessible via un ***service*** !
+Bravo ! Votre application est désormais disponible dans votre repo sur **Docker hub**, **déployée** dans le cluster Kubernetes et accessible via un ***service*** !
 ## 6- Scaling de l’application
 
 L’application kubernetes-application que vous venez de déployer est une application dite stateless. Cela signifie qu’elle ne fait persister ni donnée, ni session. Cette caractéristique facilite grandement la possibilité de mise à l’échelle de cette application. Il s’agit de l’un des [12 factor app](https://12factor.net/fr/).
@@ -394,7 +394,7 @@ version: '3'
 services:
   app:
     build: .
-    image: "$REGISTRY_URL/$TRG/app:v0.2" # <== Mise à jour de la version
+    image: "<VotreNomDeCompte>/app:v0.2" # <== Mise à jour de la version
     ports:
     - "8000:8000"
 ```
@@ -411,7 +411,7 @@ Step 2/10 : LABEL maintainer "<Nom> <Prénom>"
 Successfully built e10b81a9ad54
 
 dev $ docker compose push
-Pushing app ($REGISTRY_URL/$TRG/app:v0.2)...
+Pushing app (<VotreNomDeCompte>/app:v0.2)...
 The push refers to a repository [653925650847.dkr.ecr.eu-west-1.amazonaws.com/aug/app]
 c0973b845470: Layer already exists
 45fcbdaa9e19: Layer already exists
@@ -432,9 +432,9 @@ v0.2: digest: sha256:625f435d4b104f163ab68f3d0480299117452fad785400b0374a35e99db
 
 Pour rappel, les opérations de _build_ et de _push_, ici ont été effectuées via `docker-compose`, mais si vous l’aviez souhaité, vous auriez pu obtenir les mêmes résultats avec les commandes suivantes :
 
-```sh
-dev $ docker image build -t=$REGISTRY_URL/$TRG/app:v0.2 .
-dev $ docker image push $REGISTRY_URL/$TRG/app:v0.2
+```sh 
+dev $ docker image build -t=<VotreNomDeCompte>/app:v0.2 .
+dev $ docker image push <VotreNomDeCompte>/app:v0.2
 ```
 
 Testons maintenant une requête vers notre nouvelle route  (indice: comande curl <IP_UN_DES_NOEUDS>:<NODEPORT>/config...)
@@ -449,7 +449,7 @@ Notons de l’exposition de la ***configmap*** implique 2 nouveaux blocs de conf
 - Un nouveau Volume qui se base sur la ***configmap*** créée précédemment
 - Un point de montage au niveau de notre conteneur qui réutilise le volume initialisé et qui le monte sur le _mountPath_
 
->Appliquons notre modification :
+>Appliquons notre modification (indice: la commande Apply de k8s)
 
 La nouvelle configuration va automatiquement déployer un nouveau ***pod*** prenant en compte la nouvelle configuration.
 
