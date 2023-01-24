@@ -4,8 +4,11 @@
 >- Manipuler la labellisation des objets
 >- Apprendre à écrire des sélecteurs
 >- Déployer une application dans Kubernetes
->
+>- Créer et manipuler des ***configmap***
+>- Créer des ressources directement via des fichiers YAML
 > **Niveau de difficulté** : Débutant
+
+>>>Notez bien sur le TP, les resultats des commandes sont relatifs à l'environement de chaque utilisateur, utilisez les variables de votre popre environement (nom du cluster, nom de node, credentials de docker...)...
 
 Pour les questions sufixées par "[AnswerX]", merci de d'inscrire la réponse en remplaçant "<fix me>" dans le fichier "answers/answers_tpX" au niveau de la ligne correspondante '"AnswerX": "<fix me>"'
 
@@ -331,3 +334,129 @@ pod "kubernetes-app-578bb7d97b-x899f" deleted
 > **Questions**
 >- Que s’est-il passé ?
 >- Quel est la ressource logique de Kubernetes qui est à l’œuvre ?
+  
+  ## 2- Configuration du pod grâce à une ConfigMap
+
+Les ***configmaps*** permettent de grouper les configurations consommables par les ***pods***.
+Notre objectif va être de faire en sorte que notre application liste le contenu du fichier `/etc/config/message` et l’affiche quand elle est interrogée sur l’URL `/config`.
+
+Nous allons donc ajouter cette configuration à notre conteneur et modifier notre application en conséquence.
+
+`kubectl` permet de générer des ***configmaps*** directement à partir de fichier de configuration. C’est ce que nous allons faire ici.
+
+Commençons par créer le fichier (dans  `~/dalk/deployment/`) :
+```sh
+dev $ echo -n "Hello from ConfigMap" > message
+```
+Créons maintenant la ***configmap*** :
+```sh
+dev $ kubectl create configmap myapp-config --from-file=message
+configmap "myapp-config" created
+```
+> Vérifions que la config map a bien été crée (indice: utiliser la commande describe de kubernetes)
+
+Notre configuration est maintenant disponible. Il faut que nous mettions à jour notre application pour qu’elle réponde lors de l’appel sur l’URL `/config` un fichier.
+
+Ouvrez le fichier `app.py` et modifiez-le afin de faire en sorte que l’application écoute la route `/config` :
+
+```py
+# kubernetes-app/app.py
+from flask import Flask
+from http import HTTPStatus
+from werkzeug.exceptions import HTTPException
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "Hello Kubernetes!\n"
+
+@app.route("/config")                           # <== Ajout
+def config():                                   # <== Ajout
+    with open('/etc/config/message','r') as f:  # <== Ajout
+        return f.read()                         # <== Ajout
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(exception: HTTPException):
+    return exception.description, exception.code
+
+@app.errorhandler(Exception)
+def handle_exception(exception: Exception):
+    return HTTPStatus.INTERNAL_SERVER_ERROR.description, HTTPStatus.INTERNAL_SERVER_ERROR
+```
+
+Ceci fait, nous allons devoir créer une nouvelle version de notre image docker et la pousser dans la registry. Il est temps de modifier notre `docker-compose.yml` pour préparer ces deux opérations :
+
+```yaml
+# kubernetes-app/docker-compose.yml
+---
+version: '3'
+services:
+  app:
+    build: .
+    image: "$REGISTRY_URL/$TRG/app:v0.2" # <== Mise à jour de la version
+    ports:
+    - "8000:8000"
+```
+
+Nous pouvons à présent lancer les commandes de reconstruction et de publication de la nouvelle image :
+```sh
+dev $ docker compose build
+Building app
+Sending build context to Docker daemon 22.47 MB
+Step 1/10 : FROM python:3.7-alpine
+ ---> 74f8760a2a8b
+Step 2/10 : LABEL maintainer "<Nom> <Prénom>"
+[..]
+Successfully built e10b81a9ad54
+
+dev $ docker compose push
+Pushing app ($REGISTRY_URL/$TRG/app:v0.2)...
+The push refers to a repository [653925650847.dkr.ecr.eu-west-1.amazonaws.com/aug/app]
+c0973b845470: Layer already exists
+45fcbdaa9e19: Layer already exists
+18b267616b22: Layer already exists
+67b9b2a215ea: Layer already exists
+956940650d5d: Layer already exists
+v0.2: digest: sha256:625f435d4b104f163ab68f3d0480299117452fad785400b0374a35e99dbce1a1 size: 2401
+```
+
+>>**Notez bien ces étapes** :
+>>1. Adaptation de l'application
+>>2. Modification du `docker-compose.yml` → pour monter la version l'image
+>>3. Lancement de `docker compose build` → pour re-construire l'image
+>>4. Lancement de `docker compose up` → pour tester localement l’application
+>>5. Lancement de `docker compose push` → pour pousser l'image
+>>
+>> Vous allez être amenés à les rejouer très régulièrement dans la suite des TPs
+
+Pour rappel, les opérations de _build_ et de _push_, ici ont été effectuées via `docker-compose`, mais si vous l’aviez souhaité, vous auriez pu obtenir les mêmes résultats avec les commandes suivantes :
+
+```sh
+dev $ docker image build -t=$REGISTRY_URL/$TRG/app:v0.2 .
+dev $ docker image push $REGISTRY_URL/$TRG/app:v0.2
+```
+
+Testons maintenant une requête vers notre nouvelle route  (indice: comande curl <IP_UN_DES_NOEUDS>:<NODEPORT>/config...)
+
+Pour l’instant, pas de résultat probant, mais c’est normal. Il est nécessaire de faire plusieurs opérations :
+- Préciser qu’à présent nous allons utiliser la version **v0.2** de l’image
+- Exposer la ***configmap*** dans notre ***pod***.
+
+> quelles sont les modifications à apporter dans le fichier du ***deployment***, apportez les..
+
+Notons de l’exposition de la ***configmap*** implique 2 nouveaux blocs de configuration :
+- Un nouveau Volume qui se base sur la ***configmap*** créée précédemment
+- Un point de montage au niveau de notre conteneur qui réutilise le volume initialisé et qui le monte sur le _mountPath_
+
+>Appliquons notre modification :
+
+La nouvelle configuration va automatiquement déployer un nouveau ***pod*** prenant en compte la nouvelle configuration.
+
+> **Exercice**
+>
+> À l’aide de `kubectl describe pod`, observez la nouvelle configuration.
+
+> Testons maintenant cette nouvelle configuration en faisant de nouveau un curl vers l’ip de notre service (indice: comande curl...)
+
+
