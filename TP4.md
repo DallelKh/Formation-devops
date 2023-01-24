@@ -39,14 +39,6 @@ dev $ kubectl config view --minify
 >- Dans quel ***namespace*** travaille votre contexte ? [Answer3]
 >- Quel est le mode d’authentification utilisé pour se connecter au cluster ?
 
-Nous allons à présent faire connaissance avec l’un des outils que vos formateurs ont installés pour vous : `kube_ps1`. C’est un petit utilitaire qui va simplement modifier l’affichage dans votre console avec la commande kubeon :
-
-```sh
-dev $ kubeon
-dev:~(☸ |ral@dkusr:ral)$
-```
-
-Bien que facultatif, nous vous recommandons d’installer et d’utiliser systématiquement cet outil, surtout si vous êtes amenés à fréquemment changer de contexte, de namespace, d’identité, de cluster Kubernetes...
 ## 2- Labellisation et sélecteurs
 
 Nous allons créer des objets pour pouvoir manipuler des labels qui y sont associés. Dans un premier temps, peu importe leur utilité, ce qui nous intéresse n’est pas à quoi ils servent, mais bien la capacité de poser des labels sur n’importe quel type d’objets et de pourvoir les requêter par la suite. Dans cet exercice, nous allons simplement manipuler des ***configmap*** (***cm***).
