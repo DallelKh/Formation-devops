@@ -222,7 +222,7 @@ Investiguons un instant. Les commandes `kubectl get events` et `kubectl describe
 >
 > Essayez de comprendre la raison pour laquelle notre application ne peut pas être déployée.
 
-Vous l’aurez compris, nous avons un problème d’authentification lors de la récupération de notre image dans la registry privée. Nous allons devoir donner les credentials à notre ***deployment***. Pour cela, nous allons passer par une ressource de type ***secret***. Dans leur grande mansuétude, vos formateurs ont déjà créé ce secret. Il porte le doux nom de **`regsec`** :
+Vous l’aurez compris, nous avons un problème d’authentification lors de la récupération de notre image dans la registry privée. Nous allons devoir donner les credentials à notre ***deployment***. Pour cela, nous allons passer par une ressource de type ***secret***. il faut créér ce secret. Il porte le nom de **`regsec`** : (chercher comment creer le secret), une fois créé, s'assurer qu'il existe
 
 ```sh
 dev $ kubectl get secret regsec
